@@ -1,130 +1,151 @@
 // easy
 import java.util.*;
 
-class Employee {
+public class AutoUnboxingSum {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        List<Integer> numbers = new ArrayList<>();
+
+        System.out.println("Enter numbers (type 'exit' to stop): ");
+        while (sc.hasNext()) {
+            String input = sc.next();
+            if (input.equalsIgnoreCase("exit")) break;
+            numbers.add(Integer.parseInt(input)); 
+        }
+
+        int sum = 0;
+        for (Integer num : numbers) {
+            sum += num; 
+        }
+
+        System.out.println("Sum of numbers: " + sum);
+        sc.close();
+    }
+}
+
+
+// medium
+
+import java.io.*;
+
+class Student implements Serializable {
+    private static final long serialVersionUID = 1L;
+    int id;
     String name;
-    int age;
+    double gpa;
+
+    public Student(int id, String name, double gpa) {
+        this.id = id;
+        this.name = name;
+        this.gpa = gpa;
+    }
+
+    @Override
+    public String toString() {
+        return "Student ID: " + id + ", Name: " + name + ", GPA: " + gpa;
+    }
+}
+
+public class StudentSerialization {
+    public static void main(String[] args) {
+        String filename = "student_data.ser";
+        
+        // Serialize the object
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filename))) {
+            Student student = new Student(101, "John Doe", 3.8);
+            out.writeObject(student);
+            System.out.println("Serialization successful!");
+        } catch (IOException e) {
+            System.out.println("Serialization Error: " + e.getMessage());
+        }
+
+        // Deserialize the object
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(filename))) {
+            Student student = (Student) in.readObject();
+            System.out.println("Deserialized Student: " + student);
+        } catch (FileNotFoundException e) {
+            System.out.println("File not found: " + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("IO Exception: " + e.getMessage());
+        } catch (ClassNotFoundException e) {
+            System.out.println("Class not found: " + e.getMessage());
+        }
+    }
+}
+
+// hard
+
+
+import java.io.*;
+import java.util.*;
+
+class Employee implements Serializable {
+    private static final long serialVersionUID = 1L;
+    int id;
+    String name, designation;
     double salary;
 
-    public Employee(String name, int age, double salary) {
+    public Employee(int id, String name, String designation, double salary) {
+        this.id = id;
         this.name = name;
-        this.age = age;
+        this.designation = designation;
         this.salary = salary;
     }
 
     @Override
     public String toString() {
-        return name + " - Age: " + age + ", Salary: $" + salary;
+        return "ID: " + id + ", Name: " + name + ", Designation: " + designation + ", Salary: $" + salary;
     }
 }
 
-public class EmployeeSorting {
+public class EmployeeManagement {
+    private static final String FILE_NAME = "employees.dat";
+    
     public static void main(String[] args) {
-        List<Employee> employees = Arrays.asList(
-            new Employee("Alice", 30, 50000),
-            new Employee("Bob", 25, 60000),
-            new Employee("Charlie", 35, 55000)
-        );
+        Scanner sc = new Scanner(System.in);
+        List<Employee> employees = loadEmployees();
 
-        // Sorting employees by salary using Lambda Expression
-        employees.sort((e1, e2) -> Double.compare(e1.salary, e2.salary));
+        while (true) {
+            System.out.println("\n1. Add Employee\n2. Display All Employees\n3. Exit");
+            int choice = sc.nextInt();
 
-        System.out.println("Sorted Employees by Salary:");
-        employees.forEach(System.out::println);
-    }
-}
-
-// medium
-import java.util.*;
-import java.util.stream.Collectors;
-
-class Student {
-    String name;
-    int marks;
-
-    public Student(String name, int marks) {
-        this.name = name;
-        this.marks = marks;
-    }
-
-    @Override
-    public String toString() {
-        return name + " - Marks: " + marks;
-    }
-}
-
-public class StudentFiltering {
-    public static void main(String[] args) {
-        List<Student> students = Arrays.asList(
-            new Student("Alice", 80),
-            new Student("Bob", 70),
-            new Student("Charlie", 85),
-            new Student("David", 60),
-            new Student("Eve", 90)
-        );
-
-        // Filtering students scoring above 75%, sorting by marks, and displaying names
-        List<Student> filteredStudents = students.stream()
-            .filter(s -> s.marks > 75) // Filtering
-            .sorted((s1, s2) -> Integer.compare(s2.marks, s1.marks)) // Sorting in descending order
-            .collect(Collectors.toList());
-
-        System.out.println("Filtered and Sorted Students:");
-        filteredStudents.forEach(System.out::println);
-    }
-}
-
-// hard
-import java.util.*;
-import java.util.stream.Collectors;
-
-class Product {
-    String name, category;
-    double price;
-
-    public Product(String name, String category, double price) {
-        this.name = name;
-        this.category = category;
-        this.price = price;
+            switch (choice) {
+                case 1:
+                    System.out.print("Enter ID, Name, Designation, Salary: ");
+                    employees.add(new Employee(sc.nextInt(), sc.next(), sc.next(), sc.nextDouble()));
+                    saveEmployees(employees);
+                    System.out.println("Employee added successfully!");
+                    break;
+                case 2:
+                    System.out.println("\nAll Employees:");
+                    employees.forEach(System.out::println);
+                    break;
+                case 3:
+                    System.out.println("Exiting...");
+                    sc.close();
+                    return;
+                default:
+                    System.out.println("Invalid choice! Try again.");
+            }
+        }
     }
 
-    @Override
-    public String toString() {
-        return name + " - Category: " + category + ", Price: $" + price;
+    private static List<Employee> loadEmployees() {
+        File file = new File(FILE_NAME);
+        if (!file.exists()) return new ArrayList<>();
+
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))) {
+            return (List<Employee>) in.readObject();
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
     }
-}
 
-public class ProductProcessing {
-    public static void main(String[] args) {
-        List<Product> products = Arrays.asList(
-            new Product("Laptop", "Electronics", 800),
-            new Product("Phone", "Electronics", 500),
-            new Product("Shirt", "Clothing", 40),
-            new Product("Jeans", "Clothing", 60),
-            new Product("TV", "Electronics", 1200),
-            new Product("Shoes", "Clothing", 100)
-        );
-
-        // Grouping products by category
-        Map<String, List<Product>> groupedProducts = products.stream()
-            .collect(Collectors.groupingBy(p -> p.category));
-
-        // Finding the most expensive product in each category
-        Map<String, Product> mostExpensiveByCategory = products.stream()
-            .collect(Collectors.toMap(
-                p -> p.category,
-                p -> p,
-                (p1, p2) -> p1.price > p2.price ? p1 : p2
-            ));
-
-        // Calculating the average price of all products
-        double avgPrice = products.stream()
-            .mapToDouble(p -> p.price)
-            .average()
-            .orElse(0.0);
-
-        System.out.println("Grouped Products: " + groupedProducts);
-        System.out.println("Most Expensive Product in Each Category: " + mostExpensiveByCategory);
-        System.out.println("Average Price of All Products: $" + avgPrice);
+    private static void saveEmployees(List<Employee> employees) {
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(FILE_NAME))) {
+            out.writeObject(employees);
+        } catch (IOException e) {
+            System.out.println("Error saving employees: " + e.getMessage());
+        }
     }
 }
